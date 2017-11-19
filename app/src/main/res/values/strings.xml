@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">popularMoviesStage1</string>
+    <string name="sort_by_popularity">Sort by popularity</string>
+    <string name="sort_by_rating">Sort by rating</string>
+    <string name="error">Error</string>
+    <string name="no_internet">There is no internet connection. Check your internet connection and try again</string>
+    <string name="ok">OK</string>
+    <string name="movie_poster">Movie poster</string>
+</resources>
