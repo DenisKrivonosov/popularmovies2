@@ -20,6 +20,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".MovieInfoActivity"></activity>
+        <provider
+            android:name="com.example.denis.popularmoviesstage1.database.MovieContentProvider"
+            android:authorities="com.example.android.moviesProvider"
+            android:exported="false"/>
     </application>
 
 </manifest>

@@ -4,6 +4,9 @@ package utilttes;
  * Created by Denis on 11/15/2017.
  */
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 
 import java.io.IOException;
@@ -18,16 +21,29 @@ import java.util.Scanner;
  */
 public class NetworkUtilites {
 
+    private final static String MOVIE_REVIEWS_PATH ="reviews";
+    private final static String MOVIE_VIDEOS_PATH ="videos";
+    private final static String MOVIE_BASE_URL ="http://api.themoviedb.org/3/movie";
     private final static String POPULAR_MOVIE_BASE_URL ="http://api.themoviedb.org/3/movie/popular";
     private final static String TOP_RATED_MOVIE_BASE_URL ="http://api.themoviedb.org/3/movie/top_rated";
 
     private final static String PARAM_QUERY = "api_key";
 
     //insert here themoviedb api key
-    private final static String API_KEY = "insert_here_api_key";
+    private final static String API_KEY = "your_key";
 
 
-    public static URL buildUrl(String type) {
+    public static boolean isOnline(Context ctx) {
+        ConnectivityManager cm = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm!=null) {
+            NetworkInfo netInfo = cm.getActiveNetworkInfo();
+            return netInfo != null && netInfo.isConnectedOrConnecting();
+        }
+        else {
+            return false;
+        }
+    }
+    public static URL buildMoviesListUrl(String type) {
         String requestUrl = null;
         if (type.equals("popular")) {
             requestUrl = POPULAR_MOVIE_BASE_URL;
@@ -47,6 +63,38 @@ public class NetworkUtilites {
             e.printStackTrace();
         }
 
+        return url;
+    }
+    public static URL buildMovieTrailersUrl(String movieId) {
+        String requestUrl = MOVIE_BASE_URL;
+        Uri builtUri = Uri.parse(requestUrl).buildUpon()
+                .appendPath(movieId)
+                .appendPath(MOVIE_VIDEOS_PATH)
+                .appendQueryParameter(PARAM_QUERY, API_KEY)
+                .build();
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return url;
+    }
+    public static URL buildMovieReviewsUrl(String movieId) {
+        String requestUrl = MOVIE_BASE_URL;
+        Uri builtUri = Uri.parse(requestUrl).buildUpon()
+                .appendPath(movieId)
+                .appendPath(MOVIE_REVIEWS_PATH)
+                .appendQueryParameter(PARAM_QUERY, API_KEY)
+                .build();
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         return url;
     }
 

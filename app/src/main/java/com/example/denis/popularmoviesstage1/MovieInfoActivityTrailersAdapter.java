@@ -1,3 +1,7 @@
+/**
+ * Created by Denis on 12/16/2017.
+ */
+
 package com.example.denis.popularmoviesstage1;
 
 import android.content.Context;
@@ -7,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
@@ -19,27 +24,27 @@ import butterknife.ButterKnife;
  * Created by Denis on 11/15/2017.
  */
 
-public class MainActivityMoviesAdapter extends RecyclerView.Adapter<MainActivityMoviesAdapter.MyViewHolder> {
+public class MovieInfoActivityTrailersAdapter extends RecyclerView.Adapter<MovieInfoActivityTrailersAdapter.MyViewHolder> {
     private int itemsCount;
-    private final ArrayList<MovieInfo> moviesList;
-    private final OnItemClickListener listener;
+    private final ArrayList<TrailerInfo> trailersList;
+    private final OnTrailerClickListener listener;
     private final Context context;
 
 
-    public interface OnItemClickListener {
-        void onItemClick(MovieInfo item);
-
+    public interface OnTrailerClickListener {
+        void onItemClick(TrailerInfo item);
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.grid_image_view) ImageView moviePoster;
+        @BindView(R.id.trailerNameText)
+        TextView trailerName;
 
         public MyViewHolder(View view) {
             super(view);
             ButterKnife.bind(this,view);
         }
 
-        public void bind(final MovieInfo item, final OnItemClickListener listener) {
+        public void bind(final TrailerInfo item, final OnTrailerClickListener listener) {
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override public void onClick(View v) {
                     listener.onItemClick(item);
@@ -49,8 +54,8 @@ public class MainActivityMoviesAdapter extends RecyclerView.Adapter<MainActivity
     }
 
 
-    public  MainActivityMoviesAdapter(int itemsCount, ArrayList<MovieInfo> moviesList, OnItemClickListener listener, Context ctx) {
-        this.moviesList = moviesList;
+    public  MovieInfoActivityTrailersAdapter(int itemsCount, ArrayList<TrailerInfo> trailersList, OnTrailerClickListener listener, Context ctx) {
+        this.trailersList = trailersList;
         this.listener = listener;
         this.context = ctx;
         this.itemsCount = itemsCount;
@@ -61,20 +66,15 @@ public class MainActivityMoviesAdapter extends RecyclerView.Adapter<MainActivity
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.movie_grid_item, parent, false);
+                .inflate(R.layout.movie_info_trailer_item, parent, false);
 
         return new MyViewHolder(itemView);
     }
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-
-        Log.d("path", "http://image.tmdb.org/t/p/w185/"+moviesList.get(position).moviePosterImageThumbNail);
-        Picasso.with(context)
-                .load("http://image.tmdb.org/t/p/w185/"+moviesList.get(position).moviePosterImageThumbNail)
-                .error(R.drawable.ic_launcher_background)
-                .into(holder.moviePoster);
-        holder.bind(moviesList.get(position), listener);
+        holder.trailerName.setText(context.getResources().getString(R.string.trailer)+" "+String.valueOf(position));
+        holder.bind(trailersList.get(position), listener);
 
 
     }
