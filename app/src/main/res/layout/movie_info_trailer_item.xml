@@ -14,6 +14,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:contentDescription="@string/trailer_play_button"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -27,7 +28,7 @@
         android:layout_marginLeft="36dp"
         android:layout_marginStart="36dp"
         android:layout_marginTop="8dp"
-        android:text="TextView"
+        tools:text="@string/tools_trailer_name"
         android:textSize="25sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/imageView"
@@ -38,7 +39,9 @@
         android:id="@+id/imageView3"
         android:layout_width="match_parent"
         android:layout_height="1dp"
+        android:contentDescription="@string/horizontal_line"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:srcCompat="@android:color/black"
-        tools:layout_editor_absoluteX="260dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@android:color/black" />
 </android.support.constraint.ConstraintLayout>

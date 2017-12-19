@@ -15,9 +15,12 @@
     <string name="trailer">trailer</string>
     <string name="reviews">Reviews:</string>
     <string name="review_by">A review by</string>
+    <string name="horizontal_line">horizontal seporator line</string>
+    <string name="trailer_play_button">trailer play button</string>
     <string name="tools_movie_name">Interesting movie</string>
     <string name="tools_movie_year">2050</string>
     <string name="tools_movie_rate">8.4/10</string>
+    <string name="tools_trailer_name">trailer name</string>
     <string name="tools_movie_synopsis">it\'s an interesting movie! Watch it now!</string>
     <string name="tools_review_author">Amazing author</string>
     <string name="tools_review_content">it\'s an interesting review! Read it now!</string>

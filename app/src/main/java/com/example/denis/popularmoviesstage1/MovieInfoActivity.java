@@ -268,7 +268,7 @@ public class MovieInfoActivity extends AppCompatActivity implements MovieInfoAct
                 null,
                 null
         );
-
+        checkCursor.close();
         return checkCursor.getCount()>0;
     }
     private void renderTrailers(String result) {
