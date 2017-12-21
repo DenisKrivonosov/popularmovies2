@@ -47,7 +47,8 @@ public class MovieDBHelper extends SQLiteOpenHelper {
         // DATABASE_VERSION the table will be dropped.
         // In a production app, this method might be modified to ALTER the table
         // instead of dropping it, so that existing data is not deleted.
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + MovieContract.MovieDBEntry.TABLE_NAME);
+
+//        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + MovieContract.MovieDBEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
 }

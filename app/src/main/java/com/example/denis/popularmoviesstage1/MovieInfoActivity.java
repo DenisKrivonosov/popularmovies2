@@ -62,7 +62,7 @@ public class MovieInfoActivity extends AppCompatActivity implements MovieInfoAct
     @BindView(R.id.releaseDateTextView) TextView releaseDateTextView;
     @BindView(R.id.userRatingTextView) TextView userRatingTextView;
     @BindView(R.id.plotSynopsisTextView) TextView plotSynopsisTextView;
-    @BindView(R.id.addToFavoriteMovie) Button addToFavoriteButton;
+    @BindView(R.id.addToFavoriteMovie) ImageView addToFavoriteButton;
     @BindView(R.id.trailersRecyclerView) RecyclerView trailersRecyclerView;
     @BindView(R.id.reviewsRecyclerView) RecyclerView reviewsRecyclerView;
 
@@ -83,18 +83,6 @@ public class MovieInfoActivity extends AppCompatActivity implements MovieInfoAct
         reviewsRecyclerView.setHasFixedSize(true);
         reviewsRecyclerView.setNestedScrollingEnabled(false);
 
-//        MovieDBHelper dbHelper = new MovieDBHelper(this);
-//        // Keep a reference to the mDb until paused or killed. Get a writable database
-//        // because you will be adding restaurant customers
-//        mDb = dbHelper.getWritableDatabase();
-
-
-//        Cursor cursor = getAllGuests();
-//        Log.d("path",mDb.getPath());
-//        Log.d("maxSize",String.valueOf(mDb.getMaximumSize()));
-//        Log.d("pageSize",String.valueOf(mDb.getPageSize()));
-//        Log.d("isOpen",String.valueOf(mDb.isOpen()));
-//        Log.d("path",mDb.getPath());
 
 
         Intent receivedIntent = getIntent();
@@ -107,24 +95,21 @@ public class MovieInfoActivity extends AppCompatActivity implements MovieInfoAct
         movieSynopsis = movieInfo.plotSynopsis;
 
         if (movieId!=null) {
-
+            checkFavoriteMovie(Integer.valueOf(movieId));
             if (savedInstanceState != null) {
                 if (savedInstanceState.containsKey(SAVED_TRAILERS_RESULT)) {
                     trailersResult = savedInstanceState
                             .getString(SAVED_TRAILERS_RESULT);
-                    Log.d("b1", trailersResult);
                     renderTrailers(trailersResult);
                 }
                 if (savedInstanceState.containsKey(SAVED_REVIEWS_RESULT)) {
                     reviewsResult = savedInstanceState
                             .getString(SAVED_REVIEWS_RESULT);
-                    Log.d("b2", reviewsResult);
 
                     renderReviews(reviewsResult);
                 }
             }
             else if (NetworkUtilites.isOnline(MovieInfoActivity.this)) {
-                Log.d("movieId",movieId);
                 URL trailersApiUrl = NetworkUtilites.buildMovieTrailersUrl(movieId);
                 MovieApiQueryTask trailersAsyncTask = new MovieApiQueryTask();
                 trailersAsyncTask.movieInfoActivityDelegate = this;
@@ -132,7 +117,6 @@ public class MovieInfoActivity extends AppCompatActivity implements MovieInfoAct
                 trailersAsyncTask.execute(trailersApiUrl);
 
                 URL reviewsApiUrl = NetworkUtilites.buildMovieReviewsUrl(movieId);
-                Log.d("reviewUrl", reviewsApiUrl.toString());
                 MovieApiQueryTask reviewsAsyncTask = new MovieApiQueryTask();
                 reviewsAsyncTask.movieInfoActivityDelegate = this;
                 reviewsAsyncTask.requestType = "reviews";
@@ -142,7 +126,6 @@ public class MovieInfoActivity extends AppCompatActivity implements MovieInfoAct
         }
 
         if (posterLink!=null) {
-            Log.d("link",posterLink);
             Picasso mPicasso = Picasso.with(MovieInfoActivity.this);
 
             //Checkinf if image load from memory or Network (should be load from memory for smooth user experience)
@@ -226,18 +209,34 @@ public class MovieInfoActivity extends AppCompatActivity implements MovieInfoAct
 
     @Override
     public void onItemClick(TrailerInfo item) {
-        Log.d("trailerid",item.key);
         if (item.site.equals("YouTube")) {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v="+item.key));
-            startActivity(intent);
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            }
         }
+    }
+
+    private void checkFavoriteMovie(int movieId) {
+        addToFavoriteButton.setVisibility(View.GONE);
+        if (isMovieInList(movieId)) {
+            addToFavoriteButton.setImageDrawable(getResources().getDrawable(R.drawable.favorite_movie_image));
+        }
+        else {
+            addToFavoriteButton.setImageDrawable(getResources().getDrawable(R.drawable.not_favorite_movie_image));
+
+        }
+        addToFavoriteButton.setVisibility(View.VISIBLE);
     }
 
     private void addNewFavoriteMovie (String movieId, String posterLink, String movieTitle, String movieReleaseDate, String movieUserRating, String movieSynopsis) {
 
         if (isMovieInList(Integer.parseInt(movieId))) {
-            if (!(MovieInfoActivity.this).isFinishing()) {
-                new DialogBuilder(this,getResources().getString(R.string.error),getResources().getString(R.string.movie_already_in_list));
+            if (deleteMovieFromList(Integer.parseInt(movieId))>0) {
+                if (!(MovieInfoActivity.this).isFinishing()) {
+                    addToFavoriteButton.setImageDrawable(getResources().getDrawable(R.drawable.not_favorite_movie_image));
+                    new DialogBuilder(this,getResources().getString(R.string.success),getResources().getString(R.string.movie_deleted_from_list));
+                }
             }
             return;
         }
@@ -250,15 +249,17 @@ public class MovieInfoActivity extends AppCompatActivity implements MovieInfoAct
         cv.put(MovieContract.MovieDBEntry.COLUMN_VOTE_AVERAGE, movieUserRating);
         cv.put(MovieContract.MovieDBEntry.COLUMN_RELEASE_DATE, movieReleaseDate);
         Uri uri = getContentResolver().insert(MovieContract.MovieDBEntry.CONTENT_URI, cv);
-        Log.d("uri", uri.toString());
 
         if (uri!=null) {
+            addToFavoriteButton.setImageDrawable(getResources().getDrawable(R.drawable.favorite_movie_image));
             new DialogBuilder(this,getResources().getString(R.string.success),getResources().getString(R.string.movie_successfully_added));
         }
         else {
 
         }
     }
+
+
     private boolean isMovieInList(int movieId) {
         Cursor checkCursor = getContentResolver().query(
                 MovieContract.MovieDBEntry.CONTENT_URI.buildUpon().appendPath(String.valueOf(movieId)).build(),
@@ -271,8 +272,14 @@ public class MovieInfoActivity extends AppCompatActivity implements MovieInfoAct
         checkCursor.close();
         return checkCursor.getCount()>0;
     }
+
+    private int deleteMovieFromList(int movieId) {
+        Uri uri = MovieContract.MovieDBEntry.CONTENT_URI.buildUpon().appendPath(String.valueOf(movieId)).build();
+        int deletedRows =getContentResolver().delete(uri, null, null);
+        return deletedRows;
+    }
+
     private void renderTrailers(String result) {
-        Log.d("trailers", result);
         trailersArray = new ArrayList<TrailerInfo>();
         try {
             JSONObject resultObject = new JSONObject(result);

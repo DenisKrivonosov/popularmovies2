@@ -81,8 +81,7 @@ public class MovieContentProvider extends ContentProvider {
 
         switch (match) {
             case MOVIES:
-                // Insert new values into the database
-                // Inserting values into tasks table
+
                 long id = db.insert(TABLE_NAME, null, values);
                 if ( id > 0 ) {
                     returnUri = ContentUris.withAppendedId(MovieContract.MovieDBEntry.CONTENT_URI, id);
@@ -90,35 +89,33 @@ public class MovieContentProvider extends ContentProvider {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 }
                 break;
-            // Set the value for the returnedUri and write the default case for unknown URI's
-            // Default case throws an UnsupportedOperationException
+
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
 
-        // Notify the resolver if the uri has been changed, and return the newly inserted URI
+
         getContext().getContentResolver().notifyChange(uri, null);
 
-        // Return constructed uri (this points to the newly inserted row of data)
+
         return returnUri;
     }
 
 
-    // Implement query to handle requests for data by URI
+
     @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
 
-        // Get access to underlying database (read-only for query)
         final SQLiteDatabase db = movieDbHelper.getReadableDatabase();
 
-        // Write URI match code and set a variable to return a Cursor
+
         int match = sUriMatcher.match(uri);
         Cursor retCursor;
 
-        // Query for the tasks directory and write a default case
+
         switch (match) {
-            // Query for the tasks directory
+
             case MOVIES:
                 retCursor =  db.query(TABLE_NAME,
                         projection,
@@ -129,9 +126,9 @@ public class MovieContentProvider extends ContentProvider {
                         MovieContract.MovieDBEntry.COLUMN_TIMESTAMP+" DESC");
                 break;
             case MOVIE_WITH_ID:
-                // Get the task ID from the URI path
+
                 String movieId = uri.getPathSegments().get(1);
-                // Use selections/selectionArgs to filter for this ID
+
                 retCursor =  db.query(TABLE_NAME,
                         projection,
                         MovieContract.MovieDBEntry.COLUMN_MOVIE_ID+"="+movieId,
@@ -157,7 +154,30 @@ public class MovieContentProvider extends ContentProvider {
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
 
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Get access to underlying database (read-only for query)
+        final SQLiteDatabase db = movieDbHelper.getWritableDatabase();
+
+        // Write URI match code and set a variable to return a Cursor
+        int match = sUriMatcher.match(uri);
+        int tasksDeleted; // starts as 0
+
+        switch (match) {
+
+            case MOVIE_WITH_ID:
+                String movieId = uri.getPathSegments().get(1);
+                tasksDeleted = db.delete(TABLE_NAME, MovieContract.MovieDBEntry.COLUMN_MOVIE_ID+"=?", new String[]{movieId});
+                break;
+            // Default exception
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+
+
+        if (tasksDeleted != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
+        return tasksDeleted;
     }
 
 

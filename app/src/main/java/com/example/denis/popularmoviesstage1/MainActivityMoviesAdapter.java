@@ -69,7 +69,6 @@ public class MainActivityMoviesAdapter extends RecyclerView.Adapter<MainActivity
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
 
-        Log.d("path", "http://image.tmdb.org/t/p/w185/"+moviesList.get(position).moviePosterImageThumbNail);
         Picasso.with(context)
                 .load("http://image.tmdb.org/t/p/w185/"+moviesList.get(position).moviePosterImageThumbNail)
                 .error(R.drawable.ic_launcher_background)

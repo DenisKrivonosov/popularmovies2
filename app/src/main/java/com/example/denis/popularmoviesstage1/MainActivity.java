@@ -3,6 +3,7 @@ package com.example.denis.popularmoviesstage1;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
@@ -34,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityMovie
 
     @BindView(R.id.pb_loading_indicator) ProgressBar progressBar;
     @BindView(R.id.rv_film_posters) RecyclerView filmPostersRV;
-    private final int GRID_SPAN_COUNT=2;
+
     private MainActivityMoviesAdapter mAdapter;
     private ArrayList<MovieInfo> moviesArray;
 
@@ -46,17 +47,26 @@ public class MainActivity extends AppCompatActivity implements MainActivityMovie
         setContentView(R.layout.activity_main);
 
         ButterKnife.bind(this);
+        int gridColumsCount;
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+            gridColumsCount=3;
+        }
+        else{
+            gridColumsCount=2;
+        }
 
-        GridLayoutManager layoutManager = new GridLayoutManager(this, GRID_SPAN_COUNT);
+        GridLayoutManager layoutManager = new GridLayoutManager(this, gridColumsCount);
         filmPostersRV.setLayoutManager(layoutManager);
         filmPostersRV.setHasFixedSize(true);
         if (savedInstanceState != null) {
             if (savedInstanceState.containsKey(SAVED_MOVIES_ARRAY)) {
                 moviesArray = savedInstanceState
                         .getParcelableArrayList(SAVED_MOVIES_ARRAY);
-                mAdapter = new MainActivityMoviesAdapter(moviesArray.size(),moviesArray, MainActivity.this, MainActivity.this);
-                filmPostersRV.setAdapter(null);
-                filmPostersRV.setAdapter(mAdapter);
+                if (moviesArray!=null) {
+                    mAdapter = new MainActivityMoviesAdapter(moviesArray.size(),moviesArray, MainActivity.this, MainActivity.this);
+                    filmPostersRV.setAdapter(null);
+                    filmPostersRV.setAdapter(mAdapter);
+                }
             }
         }
         else {
@@ -100,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityMovie
 //        movieInfoIntent.putExtra("movieSynopsis", movieInfo.plotSynopsis);
 //        movieInfoIntent.putExtra("movieUserRating", movieInfo.userRating);
 //        movieInfoIntent.putExtra("movieId", movieInfo.movieId);
-        Log.d("movieIdqq",movieInfo.movieId);
+
         movieInfoIntent.putExtra("movieInfo", movieInfo);
         startActivity(movieInfoIntent);
     }
@@ -121,8 +131,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityMovie
         progressBar.setVisibility(View.INVISIBLE);
         if (requestResult != null && !requestResult.equals("")) {
             moviesArray = new ArrayList<MovieInfo>();
-            Log.d("result",requestResult);
-
             try {
                 JSONObject resultObject = new JSONObject(requestResult);
                 JSONArray moviesJsonArray = resultObject.getJSONArray("results");
@@ -132,11 +140,9 @@ public class MainActivity extends AppCompatActivity implements MainActivityMovie
                     String id = movieDataObject.getString("id");
                     String title = movieDataObject.getString("title");
                     String posterImage = movieDataObject.getString("poster_path");
-                    Log.d("asdasdaqqqq", posterImage);
                     String synopsis = movieDataObject.getString("overview");
                     String rating = movieDataObject.getString("vote_average");
                     String date = movieDataObject.getString("release_date");
-                    Log.d("movie_id",id);
                     moviesArray.add(new MovieInfo(title, posterImage, synopsis, rating, date, id));
                 }
 
@@ -155,7 +161,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityMovie
         if (NetworkUtilites.isOnline(MainActivity.this)) {
             URL movieApiUrl = NetworkUtilites.buildMoviesListUrl(searchType);
             progressBar.setVisibility(View.INVISIBLE);
-            Log.i("here", String.valueOf(movieApiUrl));
 
             MovieApiQueryTask asyncTask = new MovieApiQueryTask();
             //this to set delegate/listener back to this class
@@ -190,7 +195,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityMovie
     }
     private Cursor getFavoriteListCursor(){
         long time= System.currentTimeMillis();
-        Log.d("before",String.valueOf(time));
         Cursor checkCursor = getContentResolver().query(
                 MovieContract.MovieDBEntry.CONTENT_URI,
                 null,
@@ -200,7 +204,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityMovie
                 null
         );
         long time2= System.currentTimeMillis();
-        Log.d("after",String.valueOf(time2));
         return checkCursor;
     }
     private ArrayList<MovieInfo> convertCursorToArrayList(Cursor cursor) {
@@ -213,10 +216,12 @@ public class MainActivity extends AppCompatActivity implements MainActivityMovie
                 String synopsis = cursor.getString(cursor.getColumnIndex(MovieContract.MovieDBEntry.COLUMN_MOVIE_OVERVIEW));
                 String rating = cursor.getString(cursor.getColumnIndex(MovieContract.MovieDBEntry.COLUMN_VOTE_AVERAGE));
                 String date = cursor.getString(cursor.getColumnIndex(MovieContract.MovieDBEntry.COLUMN_RELEASE_DATE));
-                Log.d("movie_id",posterImage);
                 moviesArray.add(new MovieInfo(title, posterImage, synopsis, rating, date, id));
             }
-        } finally {
+        }
+        catch (Exception e) {
+            Log.e("exception", "convert_cursor_array",e);
+        }finally {
             cursor.close();
         }
        return moviesArray;

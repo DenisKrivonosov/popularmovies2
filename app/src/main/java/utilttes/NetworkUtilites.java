@@ -30,7 +30,7 @@ public class NetworkUtilites {
     private final static String PARAM_QUERY = "api_key";
 
     //insert here themoviedb api key
-    private final static String API_KEY = "your_key";
+    private final static String API_KEY = "";
 
 
     public static boolean isOnline(Context ctx) {
